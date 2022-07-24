@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"net/http"
+)
+
 type WebsiteChecker func(string) bool
 type result struct {
 	string
@@ -37,4 +42,22 @@ func CheckWebsites(wc WebsiteChecker, urls []string) map[string]bool {
 	}
 
 	return results
+}
+
+func httpCheck(url string) bool {
+	r, err := http.Get(url)
+	//fmt.Printf("result for %s is %s\n", url, r)
+	if err != nil {
+		return false
+	}
+	if r.StatusCode == 200 {
+		return true
+	}
+	return false
+}
+
+func main() {
+	urls := []string{"http://google.com", "http://facebook.com", "http://go.dev", "http://twitter.com"}
+	result := CheckWebsites(httpCheck, urls)
+	fmt.Print(result)
 }
