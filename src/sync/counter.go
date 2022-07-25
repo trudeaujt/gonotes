@@ -3,6 +3,11 @@ package main
 import "sync"
 
 type Counter struct {
+	//Why are we not using channels here?
+	//As stated on https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/sync#when-to-use-locks-over-channels-and-goroutines
+	// - Use channels when passing ownership of data.
+	// - Use mutexes for managing state.
+	//The data is always owned by the counter... so no need for a channel.
 	mu    sync.Mutex
 	value int
 }
