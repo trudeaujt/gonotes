@@ -138,6 +138,40 @@ C`
 Second line`,
 		})
 	})
+	t.Run("it reads the metadata in any order", func(t *testing.T) {
+		const (
+			firstBody = `Description: Description 1
+Title: Post 1
+Tags: tdd, go
+---
+First line
+Second line`
+			secondBody = `Tags: tdd2, go2
+Title: Post 2
+Description: Description 2
+---
+A
+B
+C`
+		)
+
+		fs := fstest.MapFS{
+			"hello world.md":  {Data: []byte(firstBody)},
+			"hello-world2.md": {Data: []byte(secondBody)},
+		}
+
+		posts, err := blogposts.NewPostsFromFS(fs)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assertPost(t, posts[0], blogposts.Post{
+			Title:       "Post 1",
+			Description: "Description 1",
+			Tags:        []string{"tdd", "go"},
+			Body: `First line
+Second line`,
+		})
+	})
 }
 
 func assertPost(t *testing.T, got blogposts.Post, want blogposts.Post) {
