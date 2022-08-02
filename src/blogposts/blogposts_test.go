@@ -12,8 +12,8 @@ import (
 func TestNewBlogPosts(t *testing.T) {
 	t.Run("it returns posts equal to the number of files", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"hello world.md":  {Data: []byte("hi there")},
-			"hello-world2.md": {Data: []byte("ohayou gozaimasu")},
+			"hello world.md":  {Data: []byte("Title: hi there")},
+			"hello-world2.md": {Data: []byte("Title: ohayou gozaimasu")},
 		}
 
 		posts, err := blogposts.NewPostsFromFS(fs)
@@ -51,7 +51,6 @@ func TestNewBlogPosts(t *testing.T) {
 
 		assertPost(t, posts[0], blogposts.Post{
 			Title: "Post 1",
-			Tags:  []string{""},
 		})
 	})
 	t.Run("it returns the post description", func(t *testing.T) {
@@ -75,7 +74,6 @@ Description: Description 2`
 		assertPost(t, posts[0], blogposts.Post{
 			Title:       "Post 1",
 			Description: "Description 1",
-			Tags:        []string{""},
 		})
 	})
 	t.Run("it returns the post tags as a slice", func(t *testing.T) {
@@ -171,6 +169,26 @@ C`
 			Body: `First line
 Second line`,
 		})
+	})
+	t.Run("it returns an error when the metadata is wrong", func(t *testing.T) {
+		const (
+			firstBody = `Description: Description 1
+Title: Post 1
+this-should-throw-an-error: yes
+Tags: tdd, go
+---
+First line
+Second line`
+		)
+
+		fs := fstest.MapFS{
+			"hello world.md": {Data: []byte(firstBody)},
+		}
+
+		_, err := blogposts.NewPostsFromFS(fs)
+		if err.Error() != "invalid parameter: this-should-throw-an-error: yes" {
+			t.Errorf("expected an invalid parameter error, got %v", err)
+		}
 	})
 }
 

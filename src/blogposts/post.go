@@ -28,6 +28,7 @@ func newPost(postFile io.Reader) (Post, error) {
 		if line == "---" {
 			break
 		}
+
 		parameter := strings.Split(line, ": ")
 		switch parameter[0] {
 		case "Title":
