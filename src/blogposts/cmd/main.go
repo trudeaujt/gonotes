@@ -1,7 +1,7 @@
-package cmd
+package main
 
 import (
-	"github.com/trudeaujt/blogposts"
+	blogposts "github.com/trudeaujt/blogposts"
 	"log"
 	"os"
 )
