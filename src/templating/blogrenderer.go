@@ -11,6 +11,10 @@ type Post struct {
 	Tags                     []string
 }
 
+type PostRenderer struct {
+	templ *template.Template
+}
+
 //With embedding, the template files are included into our Go program when we build it.
 //This means once we've built it, the files are always available, we don't have to worry about dragging them around with our program!
 var (
@@ -18,12 +22,17 @@ var (
 	postTemplates embed.FS
 )
 
-func Render(w io.Writer, p Post) error {
+func NewPostRenderer() (*PostRenderer, error) {
 	templ, err := template.ParseFS(postTemplates, "templates/*.gohtml")
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if err := templ.Execute(w, p); err != nil {
+
+	return &PostRenderer{templ: templ}, nil
+}
+
+func (r *PostRenderer) Render(w io.Writer, p Post) error {
+	if err := r.templ.Execute(w, p); err != nil {
 		return err
 	}
 	return nil
