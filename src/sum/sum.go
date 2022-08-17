@@ -15,11 +15,11 @@ package sum
 //}
 
 func Sum(numbers []int) int {
-	sum := 0
-	for _, number := range numbers {
-		sum += number
+	add := func(x, y int) int {
+		return x + y
 	}
-	return sum
+	result := Reduce(numbers, add, 0)
+	return result
 }
 
 //SumAll variadic function to sum all slices passed in.
@@ -32,15 +32,22 @@ func SumAll(numbersToSum ...[]int) []int {
 }
 
 func SumAllTails(numbersToSum ...[]int) []int {
-	var sums []int
-	for _, numbers := range numbersToSum {
-		if len(numbers) == 0 {
-			sums = append(sums, 0)
+	sumTail := func(acc, x []int) []int {
+		if len(x) == 0 {
+			return append(acc, 0)
 		} else {
-			//syntax for slicing is slice[low:hi]
-			tail := numbers[1:]
-			sums = append(sums, Sum(tail))
+			tail := x[1:]
+			return append(acc, Sum(tail))
 		}
 	}
-	return sums
+
+	return Reduce(numbersToSum, sumTail, []int{})
+}
+
+func Reduce[A any](collection []A, accumulator func(A, A) A, initialValue A) A {
+	var result = initialValue
+	for _, a := range collection {
+		result = accumulator(result, a)
+	}
+	return result
 }
