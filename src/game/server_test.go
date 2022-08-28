@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 )
 
@@ -62,6 +63,38 @@ func TestStoreWins(t *testing.T) {
 		}
 		if store.winCalls[0] != player {
 			t.Errorf("did not store correct winner got %q want %q", store.winCalls[0], player)
+		}
+	})
+}
+
+func TestConcurrency(t *testing.T) {
+	store := InMemoryPlayerStore{
+		map[string]int{},
+		sync.Mutex{},
+	}
+	server := &PlayerServer{&store}
+
+	t.Run("it handles concurrent connections properly", func(t *testing.T) {
+		player := "Pepper"
+		request := newPostWinRequest(player)
+		response := httptest.NewRecorder()
+
+		wantedCount := 1000
+
+		var wg sync.WaitGroup
+		wg.Add(wantedCount)
+
+		for i := 0; i < wantedCount; i++ {
+			go func() {
+				server.ServeHTTP(response, request)
+				wg.Done()
+			}()
+		}
+		wg.Wait()
+
+		assertStatus(t, response.Code, http.StatusAccepted)
+		if server.store.GetPlayerScore(player) != wantedCount {
+			t.Errorf("got %d calls to RecordWin want %d", server.store.GetPlayerScore(player), 1000)
 		}
 	})
 }
