@@ -12,6 +12,6 @@ func main() {
 	//That is where HandlerFunc comes in.
 	//It's an adapter to allow the use of normal functions as HTTP handlers without needing to create a struct.
 	//Looking at the documentation, HandlerFunc already implements the ServeHTTP method.
-	server := &PlayerServer{NewInMemoryPlayerStore()}
+	server := NewPlayerServer(NewInMemoryPlayerStore())
 	log.Fatal(http.ListenAndServe(":5001", server))
 }
