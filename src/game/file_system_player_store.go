@@ -7,33 +7,38 @@ import (
 
 type FileSystemPlayerStore struct {
 	database io.ReadWriteSeeker
+	league   League
 }
 
-func (f *FileSystemPlayerStore) GetLeague() (league []Player) {
-	//without doing this, the file cannot be rewound - after parsing the league once it cannot be parsed again.
-	f.database.Seek(0, 0)
-	league, _ = NewLeague(f.database)
-	return league
+func NewFileSystemPlayerStore(database io.ReadWriteSeeker) *FileSystemPlayerStore {
+	database.Seek(0, 0)
+	league, _ := NewLeague(database)
+	return &FileSystemPlayerStore{
+		database: database,
+		league:   league,
+	}
+}
+
+func (f *FileSystemPlayerStore) GetLeague() (league League) {
+	return f.league
 }
 
 func (f *FileSystemPlayerStore) GetPlayerScore(name string) int {
-	for _, p := range f.GetLeague() {
-		if p.Name == name {
-			return p.Wins
-		}
+	player := f.league.Find(name)
+	if player != nil {
+		return player.Wins
 	}
 	return 0
 }
 
 func (f *FileSystemPlayerStore) RecordWin(name string) {
-	league := f.GetLeague()
-	for i, p := range league {
-		if p.Name == name {
-			//we can't do p[i].Wins++ because range returns copies of the element at the index.
-			league[i].Wins++
-		}
+	player := f.league.Find(name)
+	if player == nil {
+		f.league = append(f.league, Player{name, 1})
+	} else {
+		player.Wins++
 	}
 
 	f.database.Seek(0, 0)
-	json.NewEncoder(f.database).Encode(league)
+	json.NewEncoder(f.database).Encode(f.league)
 }
