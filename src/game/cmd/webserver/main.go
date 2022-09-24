@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/trudeaujt/poker"
 	"log"
 	"net/http"
 	"os"
@@ -15,11 +16,11 @@ func main() {
 		log.Fatalf("error opening %s %v", dbFileName, err)
 	}
 
-	store, err := NewFileSystemPlayerStore(db)
+	store, err := poker.NewFileSystemPlayerStore(db)
 	if err != nil {
 		log.Fatalf("problem creating file system player store, %v", err)
 	}
-	server := NewPlayerServer(store)
+	server := poker.NewPlayerServer(store)
 
 	if err := http.ListenAndServe(":5001", server); err != nil {
 		log.Fatalf("could not listen on port 5001 %v", err)

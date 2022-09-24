@@ -1,3 +1,3 @@
-module server
+module github.com/trudeaujt/poker
 
-go 1.18
+go 1.19
