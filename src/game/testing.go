@@ -1,6 +1,7 @@
 package poker
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
@@ -110,3 +111,8 @@ type SpyBlindAlerter struct {
 func (s *SpyBlindAlerter) ScheduleAlertAt(at time.Duration, amount int) {
 	s.Alerts = append(s.Alerts, ScheduledAlert{at, amount})
 }
+
+var DummyBlindAlerter = &SpyBlindAlerter{}
+var DummyPlayerStore = &StubPlayerStore{}
+var DummyStdIn = &bytes.Buffer{}
+var DummyStdOut = &bytes.Buffer{}
