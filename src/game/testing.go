@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -110,6 +111,36 @@ type SpyBlindAlerter struct {
 
 func (s *SpyBlindAlerter) ScheduleAlertAt(at time.Duration, amount int) {
 	s.Alerts = append(s.Alerts, ScheduledAlert{at, amount})
+}
+
+func AssertScheduledAlert(t *testing.T, got ScheduledAlert, want ScheduledAlert) {
+	if got != want {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}
+
+type GameSpy struct {
+	StartedWith  int
+	FinishedWith string
+	StartCalled  bool
+}
+
+func (g *GameSpy) Finish(winner string) {
+	g.FinishedWith = winner
+}
+
+func (g *GameSpy) Start(numberOfPlayers int) {
+	g.StartedWith = numberOfPlayers
+	g.StartCalled = true
+}
+
+func AssertMessagesSentToUser(t *testing.T, stdout *bytes.Buffer, messages ...string) {
+	t.Helper()
+	want := strings.Join(messages, "")
+	got := stdout.String()
+	if got != want {
+		t.Errorf("got %q sent to stdout but expected %+v", got, messages)
+	}
 }
 
 var DummyBlindAlerter = &SpyBlindAlerter{}
