@@ -10,36 +10,27 @@ import (
 var dummySpyAlerter = &poker.SpyBlindAlerter{}
 
 func TestCLI(t *testing.T) {
-	t.Run("start a game with 5 players and record chris wins from player input", func(t *testing.T) {
-		in := strings.NewReader("5\nChris Wins\n")
+	t.Run("start a game with 3 players and record chris wins from player input", func(t *testing.T) {
+		in := userSends("3", "Chris wins")
 		stdout := &bytes.Buffer{}
 		game := &poker.GameSpy{}
 		cli := poker.NewCLI(in, stdout, game)
 		cli.PlayPoker()
 
-		want := "Chris"
-		if game.FinishedWith != want {
-			t.Errorf("wanted %s, got %s", game.FinishedWith, want)
-		}
+		poker.AssertMessagesSentToUser(t, stdout, poker.PlayerPrompt)
+		poker.AssertGameStartedWith(t, game, 3)
+		poker.AssertFinishCalledWith(t, game, "Chris")
 	})
-	t.Run("it prompts the user to enter the number of players", func(t *testing.T) {
-		in := strings.NewReader("7\n")
-		out := &bytes.Buffer{}
-		game := &poker.GameSpy{}
 
-		cli := poker.NewCLI(in, out, game)
+	t.Run("start game with 8 players and record 'Cleo' as winner", func(t *testing.T) {
+		game := &poker.GameSpy{}
+		in := userSends("8", "Cleo wins")
+		cli := poker.NewCLI(in, poker.DummyStdOut, game)
+
 		cli.PlayPoker()
 
-		got := out.String()
-		want := poker.PlayerPrompt
-
-		if got != want {
-			t.Errorf("got %s, want %s", got, want)
-		}
-
-		if game.StartedWith != 7 {
-			t.Errorf("got %s, want %s", got, want)
-		}
+		poker.AssertGameStartedWith(t, game, 8)
+		poker.AssertFinishCalledWith(t, game, "Cleo")
 	})
 	t.Run("it prints an error when a non-numeric value is entered ", func(t *testing.T) {
 		out := &bytes.Buffer{}
@@ -49,9 +40,15 @@ func TestCLI(t *testing.T) {
 		cli := poker.NewCLI(in, out, game)
 		cli.PlayPoker()
 
-		if game.StartCalled {
-			t.Errorf("game should not have started")
-		}
+		poker.AssertGameStartedWith(t, game, 0)
 		poker.AssertMessagesSentToUser(t, out, poker.PlayerPrompt, poker.BadPlayerInputErrMsg)
 	})
+}
+
+func userSends(strs ...string) *strings.Reader {
+	input := ""
+	for _, s := range strs {
+		input = input + s + "\n"
+	}
+	return strings.NewReader(input)
 }

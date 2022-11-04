@@ -143,6 +143,22 @@ func AssertMessagesSentToUser(t *testing.T, stdout *bytes.Buffer, messages ...st
 	}
 }
 
+func AssertFinishCalledWith(t *testing.T, game *GameSpy, want string) {
+	t.Helper()
+	got := game.FinishedWith
+	if got != want {
+		t.Errorf("got %q but wanted %q", got, want)
+	}
+}
+
+func AssertGameStartedWith(t *testing.T, game *GameSpy, want int) {
+	t.Helper()
+	got := game.StartedWith
+	if got != want {
+		t.Errorf("got %q but wanted %q", got, want)
+	}
+}
+
 var DummyBlindAlerter = &SpyBlindAlerter{}
 var DummyPlayerStore = &StubPlayerStore{}
 var DummyStdIn = &bytes.Buffer{}
